@@ -692,7 +692,7 @@ async function loadData(){
     if(data.config && data.config.ufHoy) config = data.config;
     setStatus('Actualizado a las ' + nowTime());
   }catch(e){
-    setStatus('No se pudo cargar — revisa tu conexión a internet');
+    setStatus('No se pudo cargar: ' + diagnoseError(e));
   }
   render();
   autoUpdateUF();
