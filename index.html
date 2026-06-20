@@ -448,7 +448,6 @@ footer .hint{ color:#7C90A4; font-size: 11.5px; max-width:48ch; }
           <th>Dirección / Comuna</th>
           <th class="sortable" data-sort="precio">Precio <span class="arrow" id="arrow-precio"></span></th>
           <th class="sortable" data-sort="m2">m² <span class="arrow" id="arrow-m2"></span></th>
-          <th class="sortable" data-sort="ufm2">UF/m² <span class="arrow" id="arrow-ufm2"></span></th>
           <th>Dorm · Baños</th>
           <th>Extras</th>
           <th>Notas</th>
@@ -815,12 +814,8 @@ function sortedFiltered(){
   let arr = listings.filter(l => matchesFilter(l, currentFilter));
   if(sortKey){
     arr = arr.slice().sort((a,b) => {
-      const va = sortKey==='precio' ? (clpEquivalent(a) ?? Infinity) :
-                 sortKey==='m2' ? (a.m2 ?? -Infinity) :
-                 (pricePerM2(a) ?? Infinity);
-      const vb = sortKey==='precio' ? (clpEquivalent(b) ?? Infinity) :
-                 sortKey==='m2' ? (b.m2 ?? -Infinity) :
-                 (pricePerM2(b) ?? Infinity);
+      const va = sortKey==='precio' ? (clpEquivalent(a) ?? Infinity) : (a.m2 ?? -Infinity);
+      const vb = sortKey==='precio' ? (clpEquivalent(b) ?? Infinity) : (b.m2 ?? -Infinity);
       return (va - vb) * sortDir;
     });
   }
@@ -831,11 +826,6 @@ function computeBadges(visible){
   const active = visible.filter(l => !l.descartado);
   const result = {};
   if(active.length >= 2){
-    const withPpm2 = active.filter(l => pricePerM2(l) !== null);
-    if(withPpm2.length >= 2){
-      const best = withPpm2.reduce((a,b) => pricePerM2(a) <= pricePerM2(b) ? a : b);
-      result.bestPpm2 = best.id;
-    }
     const withPrice = active.filter(l => clpEquivalent(l) !== null);
     if(withPrice.length >= 2){
       const cheapest = withPrice.reduce((a,b) => clpEquivalent(a) <= clpEquivalent(b) ? a : b);
@@ -851,7 +841,6 @@ function computeBadges(visible){
 }
 
 function rowHTML(l, badges){
-  const ppm2 = pricePerM2(l);
   const priceLine = l.precioUF ? fmtUF(l.precioUF) : (l.precioCLP ? fmtCLP(l.precioCLP) : '—');
   const priceSub = l.precioUF && l.precioCLP ? fmtCLP(l.precioCLP) :
                     l.precioUF ? fmtCLP(l.precioUF * config.ufHoy) : '';
@@ -861,10 +850,8 @@ function rowHTML(l, badges){
   ].filter(Boolean).join(' · ') || '—';
   const fecha = l.fechaAgregado ? new Date(l.fechaAgregado).toLocaleDateString('es-CL') : '';
 
-  let badgesHTML = '';
-  if(badges.bestPpm2 === l.id) badgesHTML += '<span class="badge badge-copper">Mejor UF/m²</span> ';
-  if(badges.cheapest === l.id) badgesHTML += '<span class="badge badge-moss">Más económico</span> ';
-  if(badges.biggest === l.id) badgesHTML += '<span class="badge badge-copper">Más grande</span>';
+  let priceBadge = badges.cheapest === l.id ? '<span class="badge badge-moss">Más económico</span>' : '';
+  let m2Badge = badges.biggest === l.id ? '<span class="badge badge-copper">Más grande</span>' : '';
 
   return `
   <tr class="${l.descartado ? 'descartado' : ''}" data-id="${l.id}">
@@ -883,12 +870,9 @@ function rowHTML(l, badges){
     <td data-label="Precio">
       <div class="price-main">${priceLine}</div>
       ${priceSub ? `<div class="price-sub">≈ ${priceSub}</div>` : ''}
+      ${priceBadge}
     </td>
-    <td data-label="m²"><span class="m2val">${l.m2 ? fmtNum(l.m2) : '—'}</span></td>
-    <td data-label="UF/m²">
-      <span class="m2val">${ppm2 ? fmtCLP(ppm2) : '—'}</span>
-      <div>${badgesHTML}</div>
-    </td>
+    <td data-label="m²"><span class="m2val">${l.m2 ? fmtNum(l.m2) : '—'}</span> ${m2Badge}</td>
     <td data-label="Dorm · Baños">${l.dormitorios ?? '—'} · ${l.banos ?? '—'}</td>
     <td data-label="Extras"><span class="extras">${extras}</span></td>
     <td data-label="Notas"><div class="notas-cell">${l.notas ? l.notas : '—'}</div></td>
@@ -940,7 +924,7 @@ function render(){
     });
   });
 
-  ['precio','m2','ufm2'].forEach(k => { const a = $('#arrow-'+k); if(a) a.textContent=''; });
+  ['precio','m2'].forEach(k => { const a = $('#arrow-'+k); if(a) a.textContent=''; });
   if(sortKey){
     const a = $('#arrow-'+sortKey);
     if(a) a.textContent = sortDir === 1 ? '▲' : '▼';
