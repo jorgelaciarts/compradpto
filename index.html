@@ -581,17 +581,6 @@ function clearConn(){
   localStorage.removeItem(CONN_KEY);
 }
 
-/* ---------------- connection (cloudinary, for photo uploads) ---------------- */
-const PHOTO_CONN_KEY = 'depto-tracker-photo-connection';
-function getPhotoConn(){
-  try{
-    const raw = localStorage.getItem(PHOTO_CONN_KEY);
-    return raw ? JSON.parse(raw) : null;
-  }catch(e){ return null; }
-}
-function setPhotoConn(cloudName, uploadPreset){
-  localStorage.setItem(PHOTO_CONN_KEY, JSON.stringify({cloudName, uploadPreset}));
-}
 
 function resizeImageFile(file, maxDim){
   return new Promise((resolve) => {
@@ -614,51 +603,21 @@ function resizeImageFile(file, maxDim){
 }
 
 async function uploadPhoto(file){
-  const conn = getPhotoConn();
   const resized = await resizeImageFile(file, 1280);
   const form = new FormData();
-  form.append('file', resized, 'foto.jpg');
-  form.append('upload_preset', conn.uploadPreset);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${conn.cloudName}/image/upload`, {
+  form.append('reqtype', 'fileupload');
+  form.append('fileToUpload', resized, 'foto.jpg');
+  const res = await fetch('https://catbox.moe/user/api.php', {
     method: 'POST',
     body: form
   });
   if(!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  return data.secure_url;
+  const url = (await res.text()).trim();
+  if(!url.startsWith('http')) throw new Error('respuesta inesperada');
+  return url;
 }
 
-function showPhotoSetup(containerForm, onDone){
-  if(containerForm.querySelector('.photo-setup')) return;
-  const box = document.createElement('div');
-  box.className = 'photo-setup';
-  box.innerHTML = `
-    <p>Para subir fotos hace falta conectar (una sola vez) un lugar gratis donde guardarlas: <strong>cloudinary.com</strong>.</p>
-    <ol>
-      <li>Entra a <a href="https://cloudinary.com/users/register/free" target="_blank">cloudinary.com</a> y creá una cuenta gratis.</li>
-      <li>En el Dashboard, copiá tu <strong>Cloud name</strong>.</li>
-      <li>Andá a Settings → Upload → Upload presets → Add upload preset. Poné "Signing Mode" en <strong>Unsigned</strong>, guardá, y copiá el nombre del preset.</li>
-    </ol>
-    <input type="text" class="photo-setup-cloud" placeholder="Cloud name">
-    <input type="text" class="photo-setup-preset" placeholder="Upload preset">
-    <button type="button" class="photo-setup-save btn btn-primary btn-small">Guardar y subir foto</button>
-    <div class="photo-setup-error error-text" style="display:none;"></div>
-  `;
-  containerForm.appendChild(box);
-  box.querySelector('.photo-setup-save').addEventListener('click', () => {
-    const cloud = box.querySelector('.photo-setup-cloud').value.trim();
-    const preset = box.querySelector('.photo-setup-preset').value.trim();
-    const errEl = box.querySelector('.photo-setup-error');
-    if(!cloud || !preset){
-      errEl.textContent = 'Completa los dos campos.';
-      errEl.style.display = 'block';
-      return;
-    }
-    setPhotoConn(cloud, preset);
-    box.remove();
-    onDone();
-  });
-}
+
 
 async function apiGet(){
   const conn = getConn();
@@ -1135,8 +1094,7 @@ function render(){
       const statusEl = form.querySelector('.archivo-status');
 
       form.querySelector('.archivo-upload-btn').addEventListener('click', () => {
-        if(getPhotoConn()){ fileInput.click(); return; }
-        showPhotoSetup(form, () => fileInput.click());
+        fileInput.click();
       });
 
       fileInput.addEventListener('change', async () => {
@@ -1151,12 +1109,7 @@ function render(){
           renderArchivoChips();
           statusEl.textContent = '';
         }catch(e){
-          statusEl.innerHTML = 'No se pudo subir. <a href="#" class="archivo-reset">Revisar configuración</a>';
-          statusEl.querySelector('.archivo-reset').addEventListener('click', (ev) => {
-            ev.preventDefault();
-            localStorage.removeItem(PHOTO_CONN_KEY);
-            showPhotoSetup(form, () => fileInput.click());
-          });
+          statusEl.textContent = 'No se pudo subir la foto. Probá de nuevo, o pegá un link más abajo.';
         }
         fileInput.value = '';
       });
