@@ -686,16 +686,18 @@ function setStatus(text){
 
 async function loadData(){
   setStatus('Cargando...');
+  let ok = false;
   try{
     const data = await apiGet();
     listings = Array.isArray(data.listings) ? data.listings : [];
     if(data.config && data.config.ufHoy) config = data.config;
     setStatus('Actualizado a las ' + nowTime());
+    ok = true;
   }catch(e){
     setStatus('No se pudo cargar: ' + diagnoseError(e));
   }
   render();
-  autoUpdateUF();
+  if(ok) autoUpdateUF();
 }
 
 function todayStr(){
@@ -727,7 +729,7 @@ async function saveAll(){
     await apiPut({ listings, config });
     setStatus('Guardado · ' + nowTime());
   }catch(e){
-    setStatus('No se pudo guardar, intenta de nuevo');
+    setStatus('No se pudo guardar: ' + diagnoseError(e));
   }
 }
 
