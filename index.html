@@ -268,6 +268,31 @@ td{ padding: 12px; font-size: 13.5px; vertical-align: top; }
 .editable-notes{ cursor: pointer; padding: 4px 6px; margin: -4px -6px; border-radius: 4px; transition: background .12s; }
 .editable-notes:hover{ background: var(--accent-soft); }
 .notas-placeholder{ color: var(--ink-faint); font-style: italic; }
+.row-num{ font-family: var(--font-mono); color: var(--ink-faint); font-weight:600; font-size:12px; }
+.archivos-cell{ display:flex; flex-wrap:wrap; gap:5px; align-items:center; max-width:160px; }
+.archivo-chip{
+  display:inline-flex; align-items:center; gap:4px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 11px; padding: 3px 6px; border-radius: 4px;
+  text-decoration:none; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.archivo-chip:hover{ background: var(--copper-soft); color: var(--copper); }
+.archivo-del{ font-weight:700; cursor:pointer; padding-left:2px; }
+.archivo-del:hover{ color: var(--brick); }
+.archivo-add-btn{
+  width:22px; height:22px; border-radius:50%; border:1px dashed var(--line);
+  background: transparent; color: var(--ink-soft); font-size:14px; line-height:1;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.archivo-add-btn:hover{ border-color: var(--copper); color: var(--copper); }
+.archivo-form{ display:flex; flex-wrap:wrap; gap:4px; width:100%; margin-top:6px; }
+.archivo-form input{
+  font-size: 11.5px; padding: 4px 6px; border:1px solid var(--line); border-radius:4px;
+  background:#FFFFFF; color: var(--ink); flex:1; min-width:90px;
+}
+.archivo-form button{ font-size:11px; padding:4px 8px; border-radius:4px; border:1px solid var(--line); background: var(--bg-panel); cursor:pointer; }
+.archivo-form .archivo-confirm{ border-color: var(--copper); color: var(--copper); }
+.archivo-form .archivo-done{ color: var(--ink-soft); }
 .notas-edit{
   width: 100%; min-width: 180px; min-height: 52px;
   font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
@@ -461,12 +486,14 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
     <table>
       <thead>
         <tr>
+          <th style="width:34px;">N°</th>
           <th style="width:90px;">Estado</th>
           <th>Dirección / Comuna</th>
           <th class="sortable" data-sort="precio">Precio <span class="arrow" id="arrow-precio"></span></th>
           <th class="sortable" data-sort="m2">m² <span class="arrow" id="arrow-m2"></span></th>
           <th>Dorm · Baños</th>
           <th>Extras</th>
+          <th>Fotos</th>
           <th>Notas</th>
           <th style="width:90px;">Acciones</th>
         </tr>
@@ -856,7 +883,7 @@ function computeBadges(visible){
   return result;
 }
 
-function rowHTML(l, badges){
+function rowHTML(l, badges, num){
   const priceLine = l.precioUF ? fmtUF(l.precioUF) : (l.precioCLP ? fmtCLP(l.precioCLP) : '—');
   const priceSub = l.precioUF && l.precioCLP ? fmtCLP(l.precioCLP) :
                     l.precioUF ? fmtCLP(l.precioUF * config.ufHoy) : '';
@@ -871,6 +898,7 @@ function rowHTML(l, badges){
 
   return `
   <tr class="${l.descartado ? 'descartado' : ''}" data-id="${l.id}">
+    <td data-label="N°"><span class="row-num">${num}</span></td>
     <td data-label="Estado">
       <div class="state-checks">
         <label><input type="checkbox" class="chk-revisado" ${l.revisado?'checked':''}> ${l.revisado?'<span class="tag-revisado">Revisado</span>':'Pendiente'}</label>
@@ -891,6 +919,12 @@ function rowHTML(l, badges){
     <td data-label="m²"><span class="m2val">${l.m2 ? fmtNum(l.m2) : '—'}</span> ${m2Badge}</td>
     <td data-label="Dorm · Baños">${l.dormitorios ?? '—'} · ${l.banos ?? '—'}</td>
     <td data-label="Extras"><span class="extras">${extras}</span></td>
+    <td data-label="Fotos">
+      <div class="archivos-cell">
+        ${(l.archivos||[]).map((a,i) => `<a href="${a.url}" target="_blank" class="archivo-chip" data-idx="${i}">${a.nombre || ('Link '+(i+1))}<span class="archivo-del" data-idx="${i}">×</span></a>`).join('')}
+        <button type="button" class="archivo-add-btn" title="Agregar foto o link">+</button>
+      </div>
+    </td>
     <td data-label="Notas"><div class="notas-cell editable-notes" title="Click para editar">${l.notas ? l.notas : '<span class="notas-placeholder">Agregar nota…</span>'}</div></td>
     <td data-label="Acciones">
       <div class="actions-cell">
@@ -914,7 +948,7 @@ function render(){
   if(!hasAny){ tbody.innerHTML = ''; return; }
 
   const badges = computeBadges(visible);
-  tbody.innerHTML = visible.map(l => rowHTML(l, badges)).join('');
+  tbody.innerHTML = visible.map((l, i) => rowHTML(l, badges, i+1)).join('');
 
   tbody.querySelectorAll('tr').forEach(tr => {
     const id = tr.dataset.id;
@@ -960,6 +994,53 @@ function render(){
         if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)) ta.blur();
         if(e.key === 'Escape'){ saved = true; render(); }
       });
+    });
+
+    const archivosCell = tr.querySelector('.archivos-cell');
+    function renderArchivoChips(){
+      archivosCell.querySelectorAll('.archivo-chip').forEach(el => el.remove());
+      const addBtn = archivosCell.querySelector('.archivo-add-btn');
+      (listing.archivos || []).forEach((a, i) => {
+        const chip = document.createElement('a');
+        chip.href = a.url; chip.target = '_blank'; chip.rel = 'noopener';
+        chip.className = 'archivo-chip';
+        chip.textContent = a.nombre || ('Link ' + (i+1));
+        const del = document.createElement('span');
+        del.className = 'archivo-del';
+        del.textContent = '×';
+        del.title = 'Quitar';
+        del.addEventListener('click', async (e) => {
+          e.preventDefault(); e.stopPropagation();
+          listing.archivos.splice(i, 1);
+          await saveAll();
+          renderArchivoChips();
+        });
+        chip.appendChild(del);
+        archivosCell.insertBefore(chip, addBtn);
+      });
+    }
+    archivosCell.querySelector('.archivo-add-btn').addEventListener('click', function(){
+      if(archivosCell.querySelector('.archivo-form')) return;
+      const form = document.createElement('div');
+      form.className = 'archivo-form';
+      form.innerHTML = `<input type="text" class="archivo-nombre" placeholder="Nombre (ej: Living)"><input type="url" class="archivo-url" placeholder="Link de la foto"><button type="button" class="archivo-confirm">Agregar</button><button type="button" class="archivo-done">Listo</button>`;
+      archivosCell.appendChild(form);
+      const nombreInput = form.querySelector('.archivo-nombre');
+      const urlInput = form.querySelector('.archivo-url');
+      urlInput.focus();
+      form.querySelector('.archivo-confirm').addEventListener('click', async () => {
+        const nombre = nombreInput.value.trim();
+        const url = urlInput.value.trim();
+        if(!url) return;
+        if(!listing.archivos) listing.archivos = [];
+        listing.archivos.push({ nombre, url });
+        await saveAll();
+        renderArchivoChips();
+        nombreInput.value = '';
+        urlInput.value = '';
+        urlInput.focus();
+      });
+      form.querySelector('.archivo-done').addEventListener('click', () => { form.remove(); });
     });
   });
 
