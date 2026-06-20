@@ -8,10 +8,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root{
-  --bg: #F3F6F5;
+  --bg: #DFF3EA;
   --bg-panel: #FFFFFF;
   --bg-panel-2: #F7FAF9;
-  --grid-line: rgba(58,90,115,0.05);
   --line: #DCE3E2;
   --accent: #3D6A8A;
   --accent-soft: rgba(61,106,138,0.08);
@@ -35,10 +34,6 @@
 html,body{margin:0;padding:0;}
 body{
   background-color: var(--bg);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 28px 28px;
   font-family: var(--font-body);
   color: var(--ink);
   min-height: 100vh;
@@ -270,6 +265,16 @@ td{ padding: 12px; font-size: 13.5px; vertical-align: top; }
 .badge-copper{ background: var(--copper-soft); color: #8A4F1E; }
 .badge-moss{ background: var(--moss-soft); color: #2F4A2C; }
 .notas-cell{ max-width: 220px; font-size: 12.5px; color: var(--ink-soft); }
+.editable-notes{ cursor: pointer; padding: 4px 6px; margin: -4px -6px; border-radius: 4px; transition: background .12s; }
+.editable-notes:hover{ background: var(--accent-soft); }
+.notas-placeholder{ color: var(--ink-faint); font-style: italic; }
+.notas-edit{
+  width: 100%; min-width: 180px; min-height: 52px;
+  font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
+  background: #FFFFFF; border: 1px solid var(--copper); border-radius: 4px;
+  padding: 6px 8px; resize: vertical;
+}
+.notas-edit:focus{ outline: none; }
 .extras{ font-size: 12px; color: var(--ink-soft); }
 .actions-cell{ display:flex; gap:6px; }
 .state-checks{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
@@ -352,7 +357,7 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
     <div class="corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
     <div class="eyebrow">Seguimiento de compra · Propiedad</div>
     <h1>Bitácora de Departamentos</h1>
-    <p class="tagline">Vas guardando cada aviso con sus datos, comparando precio y metraje, y marcando lo que ya revisaste. Los datos se sincronizan entre todos los que tengan el link.</p>
+    <p class="tagline">Proyecto Mia Laciart Monardez</p>
 
     <div class="sync-row">
       <span id="sync-status">Cargando...</span>
@@ -887,7 +892,7 @@ function rowHTML(l, badges){
     <td data-label="m²"><span class="m2val">${l.m2 ? fmtNum(l.m2) : '—'}</span> ${m2Badge}</td>
     <td data-label="Dorm · Baños">${l.dormitorios ?? '—'} · ${l.banos ?? '—'}</td>
     <td data-label="Extras"><span class="extras">${extras}</span></td>
-    <td data-label="Notas"><div class="notas-cell">${l.notas ? l.notas : '—'}</div></td>
+    <td data-label="Notas"><div class="notas-cell editable-notes" title="Click para editar">${l.notas ? l.notas : '<span class="notas-placeholder">Agregar nota…</span>'}</div></td>
     <td data-label="Acciones">
       <div class="actions-cell">
         <button class="icon-btn open-link" title="Abrir aviso">↗</button>
@@ -933,6 +938,29 @@ function render(){
         listings = listings.filter(l => l.id !== id);
         await saveAll(); render();
       }
+    });
+    tr.querySelector('.editable-notes').addEventListener('click', function(){
+      if(this.querySelector('textarea')) return;
+      this.innerHTML = '';
+      const ta = document.createElement('textarea');
+      ta.className = 'notas-edit';
+      ta.value = listing.notas || '';
+      this.appendChild(ta);
+      ta.focus();
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+      let saved = false;
+      const commit = async () => {
+        if(saved) return;
+        saved = true;
+        listing.notas = ta.value.trim();
+        await saveAll();
+        render();
+      };
+      ta.addEventListener('blur', commit);
+      ta.addEventListener('keydown', e => {
+        if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)) ta.blur();
+        if(e.key === 'Escape'){ saved = true; render(); }
+      });
     });
   });
 
