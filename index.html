@@ -83,6 +83,14 @@ h1{
   line-height: 1.5;
   margin: 0 0 14px;
 }
+.project-name{
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(18px, 3.2vw, 26px);
+  letter-spacing: 0.015em;
+  color: var(--copper);
+  margin: 0 0 16px;
+}
 .sync-row{
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
   margin-bottom: 16px;
@@ -269,30 +277,38 @@ td{ padding: 12px; font-size: 13.5px; vertical-align: top; }
 .editable-notes:hover{ background: var(--accent-soft); }
 .notas-placeholder{ color: var(--ink-faint); font-style: italic; }
 .row-num{ font-family: var(--font-mono); color: var(--ink-faint); font-weight:600; font-size:12px; }
-.archivos-cell{ display:flex; flex-wrap:wrap; gap:5px; align-items:center; max-width:160px; }
-.archivo-chip{
-  display:inline-flex; align-items:center; gap:4px;
-  background: var(--accent-soft); color: var(--accent);
-  font-size: 11px; padding: 3px 6px; border-radius: 4px;
-  text-decoration:none; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+.archivos-cell{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; max-width:200px; }
+.archivo-thumb-wrap{ position:relative; display:inline-block; }
+.archivo-thumb{ width:36px; height:36px; object-fit:cover; border-radius:5px; border:1px solid var(--line); display:block; }
+.archivo-broken{ width:36px; height:36px; border-radius:5px; border:1px solid var(--line); background:var(--bg-panel-2); display:flex; align-items:center; justify-content:center; font-size:14px; }
+.archivo-del{
+  position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%;
+  background: var(--brick); color:#fff; border:none; font-size:11px; line-height:1; padding:0;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
-.archivo-chip:hover{ background: var(--copper-soft); color: var(--copper); }
-.archivo-del{ font-weight:700; cursor:pointer; padding-left:2px; }
-.archivo-del:hover{ color: var(--brick); }
 .archivo-add-btn{
-  width:22px; height:22px; border-radius:50%; border:1px dashed var(--line);
-  background: transparent; color: var(--ink-soft); font-size:14px; line-height:1;
+  width:32px; height:32px; border-radius:6px; border:1px dashed var(--line);
+  background: transparent; color: var(--ink-soft); font-size:16px; line-height:1;
   cursor:pointer; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 .archivo-add-btn:hover{ border-color: var(--copper); color: var(--copper); }
-.archivo-form{ display:flex; flex-wrap:wrap; gap:4px; width:100%; margin-top:6px; }
+.archivo-form{ display:flex; flex-wrap:wrap; gap:6px; width:240px; margin-top:8px; align-items:center; }
 .archivo-form input{
-  font-size: 11.5px; padding: 4px 6px; border:1px solid var(--line); border-radius:4px;
+  font-size: 11.5px; padding: 5px 7px; border:1px solid var(--line); border-radius:4px;
   background:#FFFFFF; color: var(--ink); flex:1; min-width:90px;
 }
-.archivo-form button{ font-size:11px; padding:4px 8px; border-radius:4px; border:1px solid var(--line); background: var(--bg-panel); cursor:pointer; }
-.archivo-form .archivo-confirm{ border-color: var(--copper); color: var(--copper); }
+.archivo-form button{ font-size:11px; padding:5px 9px; border-radius:4px; border:1px solid var(--line); background: var(--bg-panel); cursor:pointer; }
+.archivo-form .archivo-upload-btn{ border-color: var(--copper); color: var(--copper); font-weight:600; }
+.archivo-form .archivo-confirm{ color: var(--ink-soft); }
 .archivo-form .archivo-done{ color: var(--ink-soft); }
+.archivo-status{ width:100%; font-size:11px; color: var(--ink-soft); }
+.archivo-status a{ color: var(--accent); }
+.photo-setup{ width:260px; background: var(--bg-panel-2); border:1px solid var(--line); border-radius:6px; padding:12px; margin-top:8px; }
+.photo-setup p{ font-size:12px; color: var(--ink-soft); margin:0 0 8px; line-height:1.5; }
+.photo-setup ol{ font-size:11.5px; color: var(--ink-soft); padding-left:16px; margin:0 0 10px; line-height:1.7; }
+.photo-setup a{ color: var(--accent); }
+.photo-setup input{ width:100%; font-size:12px; padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin-bottom:6px; }
+.photo-setup .btn{ width:100%; }
 .notas-edit{
   width: 100%; min-width: 180px; min-height: 52px;
   font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
@@ -382,7 +398,7 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
     <div class="corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
     <div class="eyebrow">Seguimiento de compra · Propiedad</div>
     <h1>Bitácora de Departamentos</h1>
-    <p class="tagline">Proyecto Mia Laciart Monardez</p>
+    <p class="project-name">Proyecto Mia Laciart Monardez</p>
 
     <div class="sync-row">
       <span id="sync-status">Cargando...</span>
@@ -567,6 +583,85 @@ function setConn(binId, masterKey){
 }
 function clearConn(){
   localStorage.removeItem(CONN_KEY);
+}
+
+/* ---------------- connection (cloudinary, for photo uploads) ---------------- */
+const PHOTO_CONN_KEY = 'depto-tracker-photo-connection';
+function getPhotoConn(){
+  try{
+    const raw = localStorage.getItem(PHOTO_CONN_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function setPhotoConn(cloudName, uploadPreset){
+  localStorage.setItem(PHOTO_CONN_KEY, JSON.stringify({cloudName, uploadPreset}));
+}
+
+function resizeImageFile(file, maxDim){
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => { img.src = e.target.result; };
+    img.onload = () => {
+      let { width, height } = img;
+      if(width > maxDim || height > maxDim){
+        if(width > height){ height = Math.round(height * maxDim / width); width = maxDim; }
+        else { width = Math.round(width * maxDim / height); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.78);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadPhoto(file){
+  const conn = getPhotoConn();
+  const resized = await resizeImageFile(file, 1280);
+  const form = new FormData();
+  form.append('file', resized, 'foto.jpg');
+  form.append('upload_preset', conn.uploadPreset);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${conn.cloudName}/image/upload`, {
+    method: 'POST',
+    body: form
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  return data.secure_url;
+}
+
+function showPhotoSetup(containerForm, onDone){
+  if(containerForm.querySelector('.photo-setup')) return;
+  const box = document.createElement('div');
+  box.className = 'photo-setup';
+  box.innerHTML = `
+    <p>Para subir fotos hace falta conectar (una sola vez) un lugar gratis donde guardarlas: <strong>cloudinary.com</strong>.</p>
+    <ol>
+      <li>Entra a <a href="https://cloudinary.com/users/register/free" target="_blank">cloudinary.com</a> y creá una cuenta gratis.</li>
+      <li>En el Dashboard, copiá tu <strong>Cloud name</strong>.</li>
+      <li>Andá a Settings → Upload → Upload presets → Add upload preset. Poné "Signing Mode" en <strong>Unsigned</strong>, guardá, y copiá el nombre del preset.</li>
+    </ol>
+    <input type="text" class="photo-setup-cloud" placeholder="Cloud name">
+    <input type="text" class="photo-setup-preset" placeholder="Upload preset">
+    <button type="button" class="photo-setup-save btn btn-primary btn-small">Guardar y subir foto</button>
+    <div class="photo-setup-error error-text" style="display:none;"></div>
+  `;
+  containerForm.appendChild(box);
+  box.querySelector('.photo-setup-save').addEventListener('click', () => {
+    const cloud = box.querySelector('.photo-setup-cloud').value.trim();
+    const preset = box.querySelector('.photo-setup-preset').value.trim();
+    const errEl = box.querySelector('.photo-setup-error');
+    if(!cloud || !preset){
+      errEl.textContent = 'Completa los dos campos.';
+      errEl.style.display = 'block';
+      return;
+    }
+    setPhotoConn(cloud, preset);
+    box.remove();
+    onDone();
+  });
 }
 
 async function apiGet(){
@@ -921,7 +1016,6 @@ function rowHTML(l, badges, num){
     <td data-label="Extras"><span class="extras">${extras}</span></td>
     <td data-label="Fotos">
       <div class="archivos-cell">
-        ${(l.archivos||[]).map((a,i) => `<a href="${a.url}" target="_blank" class="archivo-chip" data-idx="${i}">${a.nombre || ('Link '+(i+1))}<span class="archivo-del" data-idx="${i}">×</span></a>`).join('')}
         <button type="button" class="archivo-add-btn" title="Agregar foto o link">+</button>
       </div>
     </td>
@@ -998,14 +1092,19 @@ function render(){
 
     const archivosCell = tr.querySelector('.archivos-cell');
     function renderArchivoChips(){
-      archivosCell.querySelectorAll('.archivo-chip').forEach(el => el.remove());
+      archivosCell.querySelectorAll('.archivo-thumb-wrap').forEach(el => el.remove());
       const addBtn = archivosCell.querySelector('.archivo-add-btn');
       (listing.archivos || []).forEach((a, i) => {
-        const chip = document.createElement('a');
-        chip.href = a.url; chip.target = '_blank'; chip.rel = 'noopener';
-        chip.className = 'archivo-chip';
-        chip.textContent = a.nombre || ('Link ' + (i+1));
-        const del = document.createElement('span');
+        const wrap = document.createElement('span');
+        wrap.className = 'archivo-thumb-wrap';
+        const link = document.createElement('a');
+        link.href = a.url; link.target = '_blank'; link.rel = 'noopener';
+        const img = document.createElement('img');
+        img.src = a.url; img.alt = a.nombre || 'foto'; img.className = 'archivo-thumb';
+        img.onerror = () => { img.replaceWith(Object.assign(document.createElement('span'), {className:'archivo-broken', textContent:'🔗'})); };
+        link.appendChild(img);
+        const del = document.createElement('button');
+        del.type = 'button';
         del.className = 'archivo-del';
         del.textContent = '×';
         del.title = 'Quitar';
@@ -1015,30 +1114,65 @@ function render(){
           await saveAll();
           renderArchivoChips();
         });
-        chip.appendChild(del);
-        archivosCell.insertBefore(chip, addBtn);
+        wrap.appendChild(link);
+        wrap.appendChild(del);
+        archivosCell.insertBefore(wrap, addBtn);
       });
     }
+    renderArchivoChips();
     archivosCell.querySelector('.archivo-add-btn').addEventListener('click', function(){
       if(archivosCell.querySelector('.archivo-form')) return;
       const form = document.createElement('div');
       form.className = 'archivo-form';
-      form.innerHTML = `<input type="text" class="archivo-nombre" placeholder="Nombre (ej: Living)"><input type="url" class="archivo-url" placeholder="Link de la foto"><button type="button" class="archivo-confirm">Agregar</button><button type="button" class="archivo-done">Listo</button>`;
+      form.innerHTML = `
+        <input type="file" accept="image/*" class="archivo-file" style="display:none">
+        <button type="button" class="archivo-upload-btn">📷 Subir foto</button>
+        <input type="url" class="archivo-url" placeholder="o pegá un link">
+        <button type="button" class="archivo-confirm">Agregar link</button>
+        <button type="button" class="archivo-done">Listo</button>
+        <div class="archivo-status"></div>
+      `;
       archivosCell.appendChild(form);
-      const nombreInput = form.querySelector('.archivo-nombre');
+      const fileInput = form.querySelector('.archivo-file');
       const urlInput = form.querySelector('.archivo-url');
+      const statusEl = form.querySelector('.archivo-status');
+
+      form.querySelector('.archivo-upload-btn').addEventListener('click', () => {
+        if(getPhotoConn()){ fileInput.click(); return; }
+        showPhotoSetup(form, () => fileInput.click());
+      });
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        if(!file) return;
+        statusEl.textContent = 'Subiendo foto...';
+        try{
+          const url = await uploadPhoto(file);
+          if(!listing.archivos) listing.archivos = [];
+          listing.archivos.push({ nombre: '', url });
+          await saveAll();
+          renderArchivoChips();
+          statusEl.textContent = '';
+        }catch(e){
+          statusEl.innerHTML = 'No se pudo subir. <a href="#" class="archivo-reset">Revisar configuración</a>';
+          statusEl.querySelector('.archivo-reset').addEventListener('click', (ev) => {
+            ev.preventDefault();
+            localStorage.removeItem(PHOTO_CONN_KEY);
+            showPhotoSetup(form, () => fileInput.click());
+          });
+        }
+        fileInput.value = '';
+      });
+
       urlInput.focus();
       form.querySelector('.archivo-confirm').addEventListener('click', async () => {
-        const nombre = nombreInput.value.trim();
         const url = urlInput.value.trim();
         if(!url) return;
         if(!listing.archivos) listing.archivos = [];
-        listing.archivos.push({ nombre, url });
+        listing.archivos.push({ nombre: '', url });
         await saveAll();
         renderArchivoChips();
-        nombreInput.value = '';
         urlInput.value = '';
-        urlInput.focus();
       });
       form.querySelector('.archivo-done').addEventListener('click', () => { form.remove(); });
     });
