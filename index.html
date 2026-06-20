@@ -277,69 +277,6 @@ td{ padding: 12px; font-size: 13.5px; vertical-align: top; }
 .editable-notes:hover{ background: var(--accent-soft); }
 .notas-placeholder{ color: var(--ink-faint); font-style: italic; }
 .row-num{ font-family: var(--font-mono); color: var(--ink-faint); font-weight:600; font-size:12px; }
-.archivos-cell{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; max-width:200px; }
-.archivo-thumb-wrap{ position:relative; display:inline-block; }
-.archivo-thumb{ width:36px; height:36px; object-fit:cover; border-radius:5px; border:1px solid var(--line); display:block; }
-.archivo-broken{ width:36px; height:36px; border-radius:5px; border:1px solid var(--line); background:var(--bg-panel-2); display:flex; align-items:center; justify-content:center; font-size:14px; }
-.archivo-del{
-  position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%;
-  background: var(--brick); color:#fff; border:none; font-size:11px; line-height:1; padding:0;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-}
-.archivo-add-btn{
-  width:32px; height:32px; border-radius:6px; border:1px dashed var(--line);
-  background: transparent; color: var(--ink-soft); font-size:16px; line-height:1;
-  cursor:pointer; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.archivo-add-btn:hover{ border-color: var(--copper); color: var(--copper); }
-.archivo-form{ display:flex; flex-wrap:wrap; gap:6px; width:240px; margin-top:8px; align-items:center; }
-.archivo-form input{
-  font-size: 11.5px; padding: 5px 7px; border:1px solid var(--line); border-radius:4px;
-  background:#FFFFFF; color: var(--ink); flex:1; min-width:90px;
-}
-.archivo-form button{ font-size:11px; padding:5px 9px; border-radius:4px; border:1px solid var(--line); background: var(--bg-panel); cursor:pointer; }
-.archivo-form .archivo-upload-btn{ border-color: var(--copper); color: var(--copper); font-weight:600; }
-.archivo-form .archivo-confirm{ color: var(--ink-soft); }
-.archivo-form .archivo-done{ color: var(--ink-soft); }
-.archivo-status{ width:100%; font-size:11px; color: var(--ink-soft); }
-.archivo-status a{ color: var(--accent); }
-.photo-setup{ width:260px; background: var(--bg-panel-2); border:1px solid var(--line); border-radius:6px; padding:12px; margin-top:8px; }
-.photo-setup p{ font-size:12px; color: var(--ink-soft); margin:0 0 8px; line-height:1.5; }
-.photo-setup ol{ font-size:11.5px; color: var(--ink-soft); padding-left:16px; margin:0 0 10px; line-height:1.7; }
-.photo-setup a{ color: var(--accent); }
-.photo-setup input{ width:100%; font-size:12px; padding:6px 8px; border:1px solid var(--line); border-radius:4px; margin-bottom:6px; }
-.photo-setup .btn{ width:100%; }
-
-/* ---------- photo lightbox ---------- */
-.lightbox{
-  position:fixed; inset:0; background:rgba(17,28,33,0.88);
-  display:flex; align-items:center; justify-content:center;
-  z-index:1000; padding: 50px 20px;
-}
-.lightbox-img{ max-width:88vw; max-height:78vh; border-radius:6px; box-shadow:0 12px 40px rgba(0,0,0,0.4); }
-.lightbox-close{
-  position:absolute; top:16px; right:18px; width:38px; height:38px; border-radius:50%;
-  background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3);
-  font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
-}
-.lightbox-close:hover{ background:rgba(255,255,255,0.22); }
-.lightbox-nav{
-  position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3);
-  font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-}
-.lightbox-nav:hover{ background:rgba(255,255,255,0.22); }
-.lightbox-prev{ left:14px; }
-.lightbox-next{ right:14px; }
-.lightbox-footer{
-  position:absolute; bottom:18px; left:0; right:0; text-align:center;
-  color:#E7ECEE; font-size:12.5px; display:flex; gap:14px; align-items:center; justify-content:center;
-}
-.lightbox-footer a{ color:var(--copper); font-weight:600; text-decoration:none; }
-.lightbox-footer a:hover{ text-decoration:underline; }
-@media (max-width:600px){
-  .lightbox-nav{ width:38px; height:38px; font-size:20px; }
-}
 .notas-edit{
   width: 100%; min-width: 180px; min-height: 52px;
   font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
@@ -536,7 +473,6 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
           <th class="sortable" data-sort="m2">m² <span class="arrow" id="arrow-m2"></span></th>
           <th>Dorm · Baños</th>
           <th>Extras</th>
-          <th>Fotos</th>
           <th>Notas</th>
           <th style="width:90px;">Acciones</th>
         </tr>
@@ -554,18 +490,6 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
     </div>
   </footer>
 
-</div>
-
-<!-- ======================= PHOTO LIGHTBOX ======================= -->
-<div id="lightbox" class="lightbox" style="display:none;">
-  <button type="button" class="lightbox-close" id="lightbox-close" title="Cerrar">×</button>
-  <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" title="Anterior">‹</button>
-  <img class="lightbox-img" id="lightbox-img" src="" alt="Foto del departamento">
-  <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" title="Siguiente">›</button>
-  <div class="lightbox-footer">
-    <span id="lightbox-count"></span>
-    <a href="#" target="_blank" rel="noopener" id="lightbox-original">Abrir original ↗</a>
-  </div>
 </div>
 
 <script>
@@ -623,44 +547,6 @@ function setConn(binId, masterKey){
 function clearConn(){
   localStorage.removeItem(CONN_KEY);
 }
-
-
-function resizeImageFile(file, maxDim){
-  return new Promise((resolve) => {
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = (e) => { img.src = e.target.result; };
-    img.onload = () => {
-      let { width, height } = img;
-      if(width > maxDim || height > maxDim){
-        if(width > height){ height = Math.round(height * maxDim / width); width = maxDim; }
-        else { width = Math.round(width * maxDim / height); height = maxDim; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width; canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.78);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadPhoto(file){
-  const resized = await resizeImageFile(file, 1280);
-  const form = new FormData();
-  form.append('reqtype', 'fileupload');
-  form.append('fileToUpload', resized, 'foto.jpg');
-  const res = await fetch('https://catbox.moe/user/api.php', {
-    method: 'POST',
-    body: form
-  });
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const url = (await res.text()).trim();
-  if(!url.startsWith('http')) throw new Error('respuesta inesperada');
-  return url;
-}
-
-
 
 async function apiGet(){
   const conn = getConn();
@@ -1013,11 +899,6 @@ function rowHTML(l, badges, num){
     <td data-label="m²"><span class="m2val">${l.m2 ? fmtNum(l.m2) : '—'}</span> ${m2Badge}</td>
     <td data-label="Dorm · Baños">${l.dormitorios ?? '—'} · ${l.banos ?? '—'}</td>
     <td data-label="Extras"><span class="extras">${extras}</span></td>
-    <td data-label="Fotos">
-      <div class="archivos-cell">
-        <button type="button" class="archivo-add-btn" title="Agregar foto o link">+</button>
-      </div>
-    </td>
     <td data-label="Notas"><div class="notas-cell editable-notes" title="Click para editar">${l.notas ? l.notas : '<span class="notas-placeholder">Agregar nota…</span>'}</div></td>
     <td data-label="Acciones">
       <div class="actions-cell">
@@ -1089,91 +970,6 @@ function render(){
       });
     });
 
-    const archivosCell = tr.querySelector('.archivos-cell');
-    function renderArchivoChips(){
-      archivosCell.querySelectorAll('.archivo-thumb-wrap').forEach(el => el.remove());
-      const addBtn = archivosCell.querySelector('.archivo-add-btn');
-      (listing.archivos || []).forEach((a, i) => {
-        const wrap = document.createElement('span');
-        wrap.className = 'archivo-thumb-wrap';
-        const link = document.createElement('a');
-        link.href = a.url; link.target = '_blank'; link.rel = 'noopener';
-        link.title = 'Ver foto';
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          openLightbox(listing.archivos, i);
-        });
-        const img = document.createElement('img');
-        img.src = a.url; img.alt = a.nombre || 'foto'; img.className = 'archivo-thumb';
-        img.onerror = () => { img.replaceWith(Object.assign(document.createElement('span'), {className:'archivo-broken', textContent:'🔗'})); };
-        link.appendChild(img);
-        const del = document.createElement('button');
-        del.type = 'button';
-        del.className = 'archivo-del';
-        del.textContent = '×';
-        del.title = 'Quitar';
-        del.addEventListener('click', async (e) => {
-          e.preventDefault(); e.stopPropagation();
-          listing.archivos.splice(i, 1);
-          await saveAll();
-          renderArchivoChips();
-        });
-        wrap.appendChild(link);
-        wrap.appendChild(del);
-        archivosCell.insertBefore(wrap, addBtn);
-      });
-    }
-    renderArchivoChips();
-    archivosCell.querySelector('.archivo-add-btn').addEventListener('click', function(){
-      if(archivosCell.querySelector('.archivo-form')) return;
-      const form = document.createElement('div');
-      form.className = 'archivo-form';
-      form.innerHTML = `
-        <input type="file" accept="image/*" class="archivo-file" style="display:none">
-        <button type="button" class="archivo-upload-btn">📷 Subir foto</button>
-        <input type="url" class="archivo-url" placeholder="o pegá un link">
-        <button type="button" class="archivo-confirm">Agregar link</button>
-        <button type="button" class="archivo-done">Listo</button>
-        <div class="archivo-status"></div>
-      `;
-      archivosCell.appendChild(form);
-      const fileInput = form.querySelector('.archivo-file');
-      const urlInput = form.querySelector('.archivo-url');
-      const statusEl = form.querySelector('.archivo-status');
-
-      form.querySelector('.archivo-upload-btn').addEventListener('click', () => {
-        fileInput.click();
-      });
-
-      fileInput.addEventListener('change', async () => {
-        const file = fileInput.files[0];
-        if(!file) return;
-        statusEl.textContent = 'Subiendo foto...';
-        try{
-          const url = await uploadPhoto(file);
-          if(!listing.archivos) listing.archivos = [];
-          listing.archivos.push({ nombre: '', url });
-          await saveAll();
-          renderArchivoChips();
-          statusEl.textContent = '';
-        }catch(e){
-          statusEl.textContent = 'No se pudo subir la foto. Probá de nuevo, o pegá un link más abajo.';
-        }
-        fileInput.value = '';
-      });
-
-      urlInput.focus();
-      form.querySelector('.archivo-confirm').addEventListener('click', async () => {
-        const url = urlInput.value.trim();
-        if(!url) return;
-        if(!listing.archivos) listing.archivos = [];
-        listing.archivos.push({ nombre: '', url });
-        await saveAll();
-        renderArchivoChips();
-        urlInput.value = '';
-      });
-      form.querySelector('.archivo-done').addEventListener('click', () => { form.remove(); });
-    });
   });
 
   ['precio','m2'].forEach(k => { const a = $('#arrow-'+k); if(a) a.textContent=''; });
@@ -1222,45 +1018,6 @@ $('#import-input').addEventListener('change', (e) => {
     e.target.value = '';
   };
   reader.readAsText(file);
-});
-
-/* ---------- photo lightbox ---------- */
-let lightboxPhotos = [];
-let lightboxIndex = 0;
-function openLightbox(photos, index){
-  lightboxPhotos = photos;
-  lightboxIndex = index;
-  renderLightbox();
-  $('#lightbox').style.display = 'flex';
-}
-function closeLightbox(){
-  $('#lightbox').style.display = 'none';
-}
-function renderLightbox(){
-  const photo = lightboxPhotos[lightboxIndex];
-  if(!photo){ closeLightbox(); return; }
-  $('#lightbox-img').src = photo.url;
-  $('#lightbox-original').href = photo.url;
-  $('#lightbox-count').textContent = lightboxPhotos.length > 1 ? (lightboxIndex+1) + ' / ' + lightboxPhotos.length : '';
-  const multi = lightboxPhotos.length > 1;
-  $('#lightbox-prev').style.display = multi ? 'flex' : 'none';
-  $('#lightbox-next').style.display = multi ? 'flex' : 'none';
-}
-$('#lightbox-close').addEventListener('click', closeLightbox);
-$('#lightbox').addEventListener('click', (e) => { if(e.target.id === 'lightbox') closeLightbox(); });
-$('#lightbox-prev').addEventListener('click', () => {
-  lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length;
-  renderLightbox();
-});
-$('#lightbox-next').addEventListener('click', () => {
-  lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length;
-  renderLightbox();
-});
-document.addEventListener('keydown', (e) => {
-  if($('#lightbox').style.display === 'none') return;
-  if(e.key === 'Escape') closeLightbox();
-  if(e.key === 'ArrowLeft') $('#lightbox-prev').click();
-  if(e.key === 'ArrowRight') $('#lightbox-next').click();
 });
 
 initConnection();
