@@ -365,8 +365,8 @@ footer .hint{ color:#7C90A4; font-size: 11.5px; max-width:48ch; }
         <div class="stat-value" id="stat-favoritos">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">UF hoy (editable)</div>
-        <div class="stat-value editable" id="stat-uf" title="Click para editar el valor de la UF"></div>
+        <div class="stat-label">UF hoy (automático)</div>
+        <div class="stat-value editable" id="stat-uf" title="Se actualiza sola cada día. Click para ajustarla a mano si hace falta."></div>
       </div>
     </div>
   </header>
@@ -474,7 +474,7 @@ footer .hint{ color:#7C90A4; font-size: 11.5px; max-width:48ch; }
 const CONN_KEY = 'depto-tracker-connection';
 
 let listings = [];
-let config = { ufHoy: 40790.42 };
+let config = { ufHoy: 40790.42, ufFecha: null };
 let currentFilter = 'todos';
 let sortKey = null;
 let sortDir = 1;
@@ -561,6 +561,30 @@ async function loadData(){
     setStatus('No se pudo cargar — revisa tu conexión a internet');
   }
   render();
+  autoUpdateUF();
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function autoUpdateUF(){
+  if(config.ufFecha === todayStr()) return; // ya está al día
+  try{
+    const res = await fetch('https://mindicador.cl/api');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if(data && data.uf && data.uf.valor){
+      config.ufHoy = data.uf.valor;
+      config.ufFecha = todayStr();
+      await saveAll();
+      renderStats();
+      render();
+    }
+  }catch(e){
+    console.warn('No se pudo actualizar la UF automáticamente:', e);
+  }
 }
 
 async function saveAll(){
@@ -712,7 +736,7 @@ $('#stat-uf').addEventListener('click', function(){
   input.focus(); input.select();
   const commit = async () => {
     const val = parseFloat(input.value);
-    if(!isNaN(val) && val > 0){ config.ufHoy = val; await saveAll(); }
+    if(!isNaN(val) && val > 0){ config.ufHoy = val; config.ufFecha = todayStr(); await saveAll(); }
     renderStats(); render();
   };
   input.addEventListener('blur', commit);
