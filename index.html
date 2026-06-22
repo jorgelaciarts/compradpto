@@ -277,6 +277,8 @@ td{ padding: 12px; font-size: 13.5px; vertical-align: top; }
 .editable-notes:hover{ background: var(--accent-soft); }
 .notas-placeholder{ color: var(--ink-faint); font-style: italic; }
 .row-num{ font-family: var(--font-mono); color: var(--ink-faint); font-weight:600; font-size:12px; }
+.preview-thumb-wrap{ display:block; margin-bottom:7px; border-radius:6px; overflow:hidden; border:1px solid var(--line); width:100%; max-width:200px; }
+.preview-thumb{ width:100%; height:90px; object-fit:cover; display:block; background:var(--bg-panel-2); }
 .notas-edit{
   width: 100%; min-width: 180px; min-height: 52px;
   font-family: var(--font-body); font-size: 12.5px; color: var(--ink);
@@ -366,7 +368,7 @@ footer .hint{ color: var(--ink-faint); font-size: 11.5px; max-width:48ch; }
     <div class="corners"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
     <div class="eyebrow">Seguimiento de compra · Propiedad</div>
     <h1>Bitácora de Departamentos</h1>
-    <p class="project-name">Proyecto Departamento Mia Laciart Monardez</p>
+    <p class="project-name">Proyecto Dpto Mia Laciart Monardez</p>
 
     <div class="sync-row">
       <span id="sync-status">Cargando...</span>
@@ -887,6 +889,7 @@ function rowHTML(l, badges, num){
       </div>
     </td>
     <td data-label="Dirección">
+      ${l.link ? `<a href="${l.link}" target="_blank" rel="noopener" class="preview-thumb-wrap"><img class="preview-thumb" src="https://api.microlink.io/?url=${encodeURIComponent(l.link)}&screenshot=false&meta=false&embed=image.url" alt="preview" onerror="this.parentElement.style.display='none'"></a>` : ''}
       <div class="addr">${l.direccion || '(sin nombre)'}</div>
       <div class="comuna">${l.comuna || ''}</div>
       <div class="fecha">Agregado ${fecha}</div>
